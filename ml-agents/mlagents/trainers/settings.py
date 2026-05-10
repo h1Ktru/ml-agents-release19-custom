@@ -491,6 +491,7 @@ class CompletionCriteriaSettings:
     class MeasureType(Enum):
         PROGRESS: str = "progress"
         REWARD: str = "reward"
+        TASK_SUCCESS_RATE: str = "TaskSuccessRate" #追加した行
 
     behavior: str
     measure: MeasureType = attr.ib(default=MeasureType.REWARD)
@@ -516,7 +517,7 @@ class CompletionCriteriaSettings:
                 )
 
     def need_increment(
-        self, progress: float, reward_buffer: List[float], smoothing: float
+        self, progress: float, reward_buffer: List[float], smoothing: float, custom_measure_val: float=0.0
     ) -> Tuple[bool, float]:
         """
         Given measures, this method returns a boolean indicating if the lesson
@@ -539,6 +540,23 @@ class CompletionCriteriaSettings:
                 smoothing = measure
             if measure > self.threshold:
                 return True, smoothing
+            
+        # ★★★★ ここから追加！ TASK_SUCCESS_RATE の場合の判定ロジック ★★★★
+        if self.measure == CompletionCriteriaSettings.MeasureType.TASK_SUCCESS_RATE:
+            # 渡されてきたカスタム指標（TaskSuccessRate）の値を代入
+            measure = custom_measure_val
+            
+            # YAMLで signal_smoothing: true にしている場合は値を滑らかにする
+            if self.signal_smoothing:
+                measure = 0.25 * smoothing + 0.75 * measure
+                smoothing = measure
+                
+            # 閾値（threshold）を超えていたら True（次のレベルへ進む）を返す！
+            if measure > self.threshold:
+                # ★追加：レベルアップの判決を下す直前に、ログを出力して証拠を残す！
+                print(f"👉 [レベルアップ!] 生の成功率: {custom_measure_val:.4f} | 内部計算値: {measure:.4f} | 閾値: {self.threshold}")
+                return True, smoothing
+        # ★★★★ ここまで ★★★★
         return False, smoothing
 
 

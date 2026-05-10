@@ -7,6 +7,8 @@ from collections import defaultdict
 from mlagents.trainers.training_status import GlobalTrainingStatus, StatusType
 
 from mlagents_envs.logging_util import get_logger
+#↓additional#
+from mlagents.trainers.stats import GLOBAL_CUSTOM_STATS
 
 logger = get_logger(__name__)
 
@@ -165,11 +167,16 @@ class EnvironmentParameterManager:
             ):
                 behavior_to_consider = lesson.completion_criteria.behavior
                 if behavior_to_consider in trainer_steps:
+                    #additional#
+                    custom_val=GLOBAL_CUSTOM_STATS.get("TaskSuccessRate",0.0)
+
                     must_increment, new_smoothing = lesson.completion_criteria.need_increment(
                         float(trainer_steps[behavior_to_consider])
                         / float(trainer_max_steps[behavior_to_consider]),
                         trainer_reward_buffer[behavior_to_consider],
                         self._smoothed_values[param_name],
+                        #additional#
+                        custom_measure_val=custom_val
                     )
                     self._smoothed_values[param_name] = new_smoothing
                     if must_increment:

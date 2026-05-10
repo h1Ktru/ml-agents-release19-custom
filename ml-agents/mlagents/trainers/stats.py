@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, deque#import deque for keeping track of recent custom stat values
 from enum import Enum
 from typing import List, Dict, NamedTuple, Any, Optional
 import numpy as np
@@ -16,6 +16,9 @@ from mlagents.torch_utils.globals import get_rank
 
 logger = get_logger(__name__)
 
+#add#
+GLOBAL_CUSTOM_STATS = {}
+GLOBAL_CUSTOM_STATS_HISTORY = deque(maxlen=100)#keep track for last 100 episodes of results for custom stats
 
 def _dict_to_str(param_dict: Dict[str, Any], num_tabs: int) -> str:
     """
@@ -334,6 +337,13 @@ class StatsReporter:
         :param value: the value of the statistic.
         :param aggregation: the aggregation method for the statistic, default StatsAggregationMethod.AVERAGE.
         """
+        #additional#
+        if key=="TaskSuccessRate":
+            GLOBAL_CUSTOM_STATS_HISTORY.append(value)
+
+            true_average=np.mean(GLOBAL_CUSTOM_STATS_HISTORY)
+            GLOBAL_CUSTOM_STATS[key]=true_average
+
         with StatsReporter.lock:
             StatsReporter.stats_dict[self.category][key].append(value)
             StatsReporter.stats_aggregation[self.category][key] = aggregation
