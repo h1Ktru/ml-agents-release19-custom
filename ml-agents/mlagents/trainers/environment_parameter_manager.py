@@ -185,6 +185,12 @@ class EnvironmentParameterManager:
                         )
                         self.log_current_lesson(param_name)
                         updated = True
+
+                        # ★★★★ ここから追加：レベルアップの伝言を残す ★★★★
+                        from mlagents.trainers.stats import LESSON_EVENT
+                        LESSON_EVENT["is_up"] = True
+                        LESSON_EVENT["num"] = next_lesson_num  # ← next_lesson_num を使う！
+
                         if lesson.completion_criteria.require_reset:
                             must_reset = True
         return updated, must_reset

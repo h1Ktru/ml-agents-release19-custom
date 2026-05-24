@@ -19,7 +19,7 @@ logger = get_logger(__name__)
 #add#
 GLOBAL_CUSTOM_STATS = {}
 GLOBAL_CUSTOM_STATS_HISTORY = deque(maxlen=100)#keep track for last 100 episodes of results for custom stats
-
+LESSON_EVENT = {"is_up": False, "num": 0} #memo for levelup
 def _dict_to_str(param_dict: Dict[str, Any], num_tabs: int) -> str:
     """
     Takes a parameter dictionary and converts it to a human-readable string.

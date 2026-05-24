@@ -250,6 +250,45 @@ class TrainerController:
                 with hierarchical_timer("trainer_advance"):
                     trainer.advance()
 
+        # ★★★★ ここから追加：レベルアップ時の自動セーブ＆コピー ★★★★
+        from mlagents.trainers.stats import LESSON_EVENT
+        if LESSON_EVENT["is_up"]:
+            LESSON_EVENT["is_up"] = False # 伝言を確認したらフラグを下ろす
+            
+            lesson_num = LESSON_EVENT["num"]
+            print(f"\n👉 [モデル自動保存] レッスン {lesson_num} に到達！現在のモデルを保存します...")
+            
+            # 1. まず標準機能を使って、最新のモデルを書き出させる
+            self._save_models()
+
+            # 2. 書き出された .onnx を探して、Lesson番号付きでコピーする
+            import os
+            import shutil
+            import glob
+            
+            try:
+                # 実行中の run_id のフォルダを特定
+                run_id_str = getattr(self, "run_id", "*")
+                for behavior_name in self.trainers.keys():
+                    # results フォルダの中にある .onnx ファイルを探す
+                    search_pattern = os.path.join("results", run_id_str, "**", f"{behavior_name}.onnx")
+                    found_files = glob.glob(search_pattern, recursive=True)
+                    
+                    if found_files:
+                        source_file = found_files[0] # 見つかった最新のモデル
+
+                        # 例：「models/CustomCurriculum_01/」
+                        target_dir = os.path.join("models", run_id_str)
+                        os.makedirs(target_dir, exist_ok=True) # フォルダが無ければ自動作成！
+                        
+                        # ファイル名の設定
+                        target_file = os.path.join(target_dir, f"{behavior_name}_Lesson{lesson_num}.onnx")
+                        
+                        shutil.copy2(source_file, target_file)
+                        print(f"✅ 保存完了: {target_file}\n")
+            except Exception as e:
+                print(f"⚠️ モデルのコピーに失敗しました: {e}")
+
         return num_steps
 
     def _register_new_behaviors(
