@@ -281,8 +281,8 @@ class TrainerController:
                         target_dir = os.path.join("models", run_id_str)
                         os.makedirs(target_dir, exist_ok=True) # フォルダが無ければ自動作成！
                         
-                        # ファイル名の設定
-                        target_file = os.path.join(target_dir, f"{behavior_name}_Lesson{lesson_num}.onnx")
+                        # Setting the file name: using the number of the lesson just finished
+                        target_file = os.path.join(target_dir, f"{behavior_name}_Lesson{lesson_num-1}.onnx")
                         
                         shutil.copy2(source_file, target_file)
                         print(f"✅ 保存完了: {target_file}\n")
