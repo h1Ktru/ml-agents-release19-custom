@@ -554,7 +554,7 @@ class CompletionCriteriaSettings:
             # 閾値（threshold）を超えていたら True（次のレベルへ進む）を返す！
             if measure > self.threshold:
                 # ★追加：レベルアップの判決を下す直前に、ログを出力して証拠を残す！
-                print(f"👉 [レベルアップ!] 生の成功率: {custom_measure_val:.4f} | 内部計算値: {measure:.4f} | 閾値: {self.threshold}")
+                print(f"👉 [レベルアップ!] 成功率: {custom_measure_val:.4f} | 閾値: {self.threshold}")
                 return True, smoothing
         # ★★★★ ここまで ★★★★
         return False, smoothing

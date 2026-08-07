@@ -4,6 +4,7 @@ using UnityEngine;
 using System.IO;
 using Unity.MLAgents.Policies;
 using UnityEngine.Serialization;
+// using System.Diagnostics;
 
 namespace Unity.MLAgents.Demonstrations
 {
@@ -25,6 +26,10 @@ namespace Unity.MLAgents.Demonstrations
     [AddComponentMenu("ML Agents/Demonstration Recorder", (int)MenuGroup.Default)]
     public class DemonstrationRecorder : MonoBehaviour
     {
+        //追加
+        private string m_CurrentDemoPath;  
+        //成功フラグ
+        public bool SaveEpisode = true;         
         /// <summary>
         /// Whether or not to record demonstrations.
         /// </summary>
@@ -116,11 +121,17 @@ namespace Unity.MLAgents.Demonstrations
             if (string.IsNullOrEmpty(DemonstrationDirectory))
             {
                 DemonstrationDirectory = Path.Combine(Application.dataPath, k_DefaultDirectoryName);
+                //変更
+                // DemonstrationDirectory = Path.Combine(
+                // Directory.GetParent(Application.dataPath).FullName,
+                // "Demonstrations");
             }
 
             DemonstrationName = SanitizeName(DemonstrationName, MaxNameLength);
-            var filePath = MakeDemonstrationFilePath(m_FileSystem, DemonstrationDirectory, DemonstrationName);
-            var stream = m_FileSystem.File.Create(filePath);
+            // var filePath = MakeDemonstrationFilePath(m_FileSystem, DemonstrationDirectory, DemonstrationName);
+            // var stream = m_FileSystem.File.Create(filePath);
+            m_CurrentDemoPath = MakeDemonstrationFilePath(m_FileSystem, DemonstrationDirectory, DemonstrationName);
+            var stream = m_FileSystem.File.Create(m_CurrentDemoPath);
             m_DemoWriter = new DemonstrationWriter(stream);
 
             AddDemonstrationWriterToAgent(m_DemoWriter);
@@ -188,7 +199,37 @@ namespace Unity.MLAgents.Demonstrations
 
                 m_DemoWriter.Close();
                 m_DemoWriter = null;
+                //追加
+                // if (!SaveEpisode)
+                // {
+                //     if (File.Exists(m_CurrentDemoPath))
+                //     {
+                //         File.Delete(m_CurrentDemoPath);
+                //         Debug.Log("Demo deleted.");
+                //     }
+                // }
             }
+        }
+
+        //追加
+        public void StartNewRecording(string demoName)
+        {
+            Close();
+
+            DemonstrationName = demoName;
+            // SaveEpisode = true;
+            // Record = true;
+
+            LazyInitialize();
+        }
+
+        public void StopRecording(bool save)
+        {
+            SaveEpisode = save;
+
+            Record = false;
+
+            Close();
         }
 
         /// <summary>

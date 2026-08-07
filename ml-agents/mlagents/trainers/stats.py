@@ -344,6 +344,11 @@ class StatsReporter:
             true_average=np.mean(GLOBAL_CUSTOM_STATS_HISTORY)
             GLOBAL_CUSTOM_STATS[key]=true_average
 
+            value=true_average
+
+        else:
+            GLOBAL_CUSTOM_STATS[key] = value
+
         with StatsReporter.lock:
             StatsReporter.stats_dict[self.category][key].append(value)
             StatsReporter.stats_aggregation[self.category][key] = aggregation
