@@ -1,19 +1,35 @@
 name: nightly
 
 on:
+  # 毎日 07:00 UTC に自動実行
   schedule:
-    - cron: '0 7 * * *' # run at 7 AM UTC == midnight PST
+    - cron: '0 7 * * *'
+
+  # GitHub Actions画面から手動実行できるようにする
+  workflow_dispatch:
 
 jobs:
   markdown-link-check-full:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
-    - uses: actions/setup-node@v2-beta
-      with:
-        node-version: '12'
-    - run: sudo npm install -g markdown-link-check
-    - uses: pre-commit/action@v2.0.0
-      with:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Install markdown-link-check
+        run: npm install -g markdown-link-check
+
+      - name: Run pre-commit markdown link check
+        uses: pre-commit/action@v3.0.1
+        with:
           extra_args: --hook-stage manual markdown-link-check-full --all-files
